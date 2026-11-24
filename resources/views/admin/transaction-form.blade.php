@@ -1,0 +1,16 @@
+@extends('layout.layout')
+@section('title', 'New transaction')
+@section('content')
+<x-page-heading title="Create a transaction" description="Create an application or renew an existing membership."><a href="{{ route('transactions.index') }}" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Back to transactions</a></x-page-heading>
+<form method="POST" action="{{ route('transactions.store') }}" class="max-w-3xl rounded-xl bg-white p-6 sm:p-8">
+    @csrf
+    @if($members->isEmpty())<p class="mb-6 rounded-lg bg-amber-50 p-4 text-xs leading-6 text-amber-800">There are no members available for a new transaction. Complete existing transactions or <a href="{{ route('members.create') }}" class="underline">register a member</a>.</p>@endif
+    <div class="space-y-5">
+        <x-field name="member_id" label="Member" required><select name="member_id" id="member_id" data-transaction-member required class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#270CC5] focus:ring-2 focus:ring-[#270CC5]/10"><option value="">Select a member</option>@foreach($members as $member)<option value="{{ $member->id }}" data-fee="{{ number_format(($member->category?->fee ?? 0) + ($member->level?->fee ?? 0), 2, '.', '') }}" data-duration="{{ $member->level?->duration_months ?? 12 }}" data-type="{{ $member->has_approved_application ? 'renewal' : 'application' }}" @selected(old('member_id', request('member')) == $member->id)>{{ $member->user->name }} · {{ $member->member_number }}</option>@endforeach</select></x-field>
+        <x-field name="type" label="Transaction type" required><select name="type" id="type" required class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#270CC5] focus:ring-2 focus:ring-[#270CC5]/10"><option value="application" @selected(old('type', $defaultType) === 'application')>Membership application</option><option value="renewal" @selected(old('type', $defaultType) === 'renewal')>Membership renewal</option></select></x-field>
+        <x-field name="notes" label="Notes"><textarea id="notes" name="notes" rows="3" maxlength="2000" class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#270CC5] focus:ring-2 focus:ring-[#270CC5]/10">{{ old('notes') }}</textarea></x-field>
+    </div>
+    <p data-transaction-summary class="mt-6 rounded-lg bg-[#F6F6FB] p-4 text-xs leading-6 text-[#858496]">The category and level determine the fee. Only one open transaction is allowed per member.</p>
+    <div class="mt-7 flex gap-3"><button @disabled($members->isEmpty()) class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#270CC5] px-4 py-2.5 text-xs font-medium text-white transition hover:bg-[#1800A6] disabled:cursor-not-allowed disabled:opacity-40">Create transaction</button><a href="{{ route('transactions.index') }}" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</a></div>
+</form>
+@endsection

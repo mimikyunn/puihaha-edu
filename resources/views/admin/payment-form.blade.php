@@ -1,0 +1,16 @@
+@extends('layout.layout')
+@section('title', 'Record payment')
+@section('content')
+<x-page-heading title="Record a payment" description="Record a full or partial payment against a pending transaction."><a href="{{ route('payments.index') }}" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50">All payments</a></x-page-heading>
+<form method="POST" action="{{ route('payments.store') }}" class="max-w-3xl rounded-xl bg-white p-6 sm:p-8">
+    @csrf
+    @if($transactions->isEmpty())<p class="mb-6 rounded-lg bg-amber-50 p-4 text-xs text-amber-800">No pending transactions are available. <a href="{{ route('transactions.create') }}" class="underline">Create a transaction</a> first.</p>@endif
+    <div class="space-y-5">
+        <x-field name="membership_transaction_id" label="Transaction" required><select id="membership_transaction_id" name="membership_transaction_id" data-payment-transaction required class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#270CC5] focus:ring-2 focus:ring-[#270CC5]/10"><option value="">Select a transaction</option>@foreach($transactions as $transaction)<option value="{{ $transaction->id }}" data-balance="{{ number_format($transaction->balanceCents() / 100, 2, '.', '') }}" @selected(old('membership_transaction_id', request('transaction')) == $transaction->id)>{{ $transaction->member->user->name }} · {{ $transaction->transaction_number }} · Balance ₱{{ number_format($transaction->balanceCents() / 100, 2) }}</option>@endforeach</select></x-field>
+        <div class="grid gap-5 sm:grid-cols-2"><x-input name="amount" label="Payment amount (₱)" type="number" required min="0.01" max="99999999.99" step="0.01" placeholder="0.00" /><x-field name="payment_method" label="Payment method" required><select id="payment_method" name="payment_method" required class="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#270CC5] focus:ring-2 focus:ring-[#270CC5]/10">@foreach(['cash' => 'Cash', 'bank_transfer' => 'Bank transfer', 'card' => 'Card', 'e_wallet' => 'E-wallet'] as $value => $label)<option value="{{ $value }}" @selected(old('payment_method') === $value)>{{ $label }}</option>@endforeach</select></x-field></div>
+        <x-input name="reference_number" label="External reference number" maxlength="100" placeholder="Required for bank transfer, card and e-wallet" />
+    </div>
+    <p data-payment-summary class="mt-6 rounded-lg bg-[#F6F6FB] p-4 text-xs leading-6 text-[#858496]">Payments are recorded immediately. Please verify the amount and reference before saving.</p>
+    <div class="mt-7 flex gap-3"><button @disabled($transactions->isEmpty()) class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#270CC5] px-4 py-2.5 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-40 transition hover:bg-[#1800A6]">Save payment</button><a href="{{ route('payments.index') }}" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Cancel</a></div>
+</form>
+@endsection

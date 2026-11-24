@@ -2,6 +2,15 @@
 
 return [
 
+    'google_maps' => [
+        'key' => env('GOOGLE_MAPS_KEY'),
+        'map_id' => env('GOOGLE_MAPS_MAP_ID', 'DEMO_MAP_ID'),
+    ],
+
+    'openweather' => [
+        'key' => env('OPENWEATHER_KEY'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
